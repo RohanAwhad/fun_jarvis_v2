@@ -12,28 +12,13 @@ tokenizer = None
 model = None
 batch_size = None
 
-def setup_encoder(model_path):
+def init(model_path):
   global tokenizer, model, batch_size
 
   tokenizer = AutoTokenizer.from_pretrained(model_path)
   model = AutoModel.from_pretrained(model_path)
   model.eval()
   batch_size = 8
-
-
-def get_chunks(all_sents, max_len=1200):
-  chunks = []
-  cntr = 0
-  tmp = []
-  for sent in all_sents:
-    tmp.append(sent)
-    cntr += len(sent)
-    if cntr > max_len:
-      chunks.append(' '.join(tmp))
-      cntr = 0
-      tmp = []
-  if len(tmp): chunks.append(' '.join(tmp))
-  return chunks
 
 # Following function is taken from huggingface's documentation on how to use the model
 #Mean Pooling - Take attention mask into account for correct averaging

@@ -1,6 +1,21 @@
 import bz2
 import pickle
 
+
+def get_chunks(all_sents, max_len=1200):
+  chunks = []
+  cntr = 0
+  tmp = []
+  for sent in all_sents:
+    tmp.append(sent)
+    cntr += len(sent)
+    if cntr > max_len:
+      chunks.append(' '.join(tmp))
+      cntr = 0
+      tmp = []
+  if len(tmp): chunks.append(' '.join(tmp))
+  return chunks
+
 def save_data(data_tuple, fn):
   bin_data = pickle.dumps(data_tuple)
   cmprsd_bin_data = bz2.compress(bin_data)

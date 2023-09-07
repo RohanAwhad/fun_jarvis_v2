@@ -1,7 +1,6 @@
 #!/opt/homebrew/bin/python3
 
 import config
-import encoder
 import helper
 import web_search
 
@@ -30,8 +29,8 @@ def get_context(question_embd, book_name):
     reader = PdfReader(f'{config.BOOK_DIR}/{book_name}.pdf')
     all_text = ' '.join([x.strip() for page in reader.pages for x in page.extract_text().split('\n')])
     all_sents = sent_tokenize(all_text)
-    all_chunks = encoder.get_chunks(all_sents, max_len=config.MAX_LEN)
-    embeddings = encoder.encode(all_chunks)
+    all_chunks = helper.get_chunks(all_sents, max_len=config.MAX_LEN)
+    embeddings = config.ENCODER.encode(all_chunks)
     helper.save_data((all_chunks, embeddings), embd_fn)
 
   similarity_score = (question_embd @ embeddings.T).squeeze()
@@ -40,6 +39,7 @@ def get_context(question_embd, book_name):
 
 
 if __name__ == '__main__':
+  '''
   ducky_res = web_search.search('Custom bootloader PMP configuration for limiting OS memory access')
   internet_res = []
   for url in ducky_res:
@@ -51,11 +51,12 @@ if __name__ == '__main__':
     except Exception as e:
       logger.error(e)
   exit(0)
+  '''
 
-  encoder.setup_encoder(config.MODEL_PATH)
+  config.ENCODER.init(config.MODEL_PATH)
   books = ['riscv_isa_privileged', 'xv6_book']  # TODO (rohan): this should be taken from yaml
   with open(config.QUESTION_FILE, 'r') as f: question = f.read()  # TODO (rohan): this should be run in loop, to avoid reinitialization of encoder model
-  question_embd = encoder.encode(question)
+  question_embd = config.ENCODER.encode(question)
   scores, chunks = [], []
   for book_name in books:
     sc, chks = get_context(question_embd, book_name)
