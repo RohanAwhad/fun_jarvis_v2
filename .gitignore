@@ -1,0 +1,7 @@
+.DS_Store
+*.swp
+__pycache__
+books
+embeddings
+prompt.txt
+question.txt
