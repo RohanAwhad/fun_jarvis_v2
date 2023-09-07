@@ -5,3 +5,5 @@ books
 embeddings
 prompt.txt
 question.txt
+prompt.template
+search_engine_prompt.txt
