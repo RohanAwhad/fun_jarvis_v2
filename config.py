@@ -2,7 +2,8 @@ import torch
 
 torch.set_grad_enabled(False)
 
-K = 15
+SEARCH_K = 3
+PASSAGE_K = 15
 BOOK_DIR = 'books'
 EMBD_DIR = 'embeddings'
 QUESTION_FILE = 'question.txt'

@@ -3,6 +3,9 @@
 import config
 import encoder
 import helper
+import web_search
+
+from readable import Readable
 
 # 3rd -party libs
 import bz2
@@ -32,11 +35,23 @@ def get_context(question_embd, book_name):
     helper.save_data((all_chunks, embeddings), embd_fn)
 
   similarity_score = (question_embd @ embeddings.T).squeeze()
-  chunk_ids = similarity_score.argsort().tolist()[-config.K:]
+  chunk_ids = similarity_score.argsort().tolist()[-config.PASSAGE_K:]
   return similarity_score[chunk_ids], [all_chunks[x] for x in chunk_ids]
 
 
 if __name__ == '__main__':
+  ducky_res = web_search.search('Custom bootloader PMP configuration for limiting OS memory access')
+  internet_res = []
+  for url in ducky_res:
+    try:
+      page = Readable(url)
+      print(page.text)
+      internet_res.append(page)
+      if len(internet_res) >= config.SEARCH_K: break
+    except Exception as e:
+      logger.error(e)
+  exit(0)
+
   encoder.setup_encoder(config.MODEL_PATH)
   books = ['riscv_isa_privileged', 'xv6_book']  # TODO (rohan): this should be taken from yaml
   with open(config.QUESTION_FILE, 'r') as f: question = f.read()  # TODO (rohan): this should be run in loop, to avoid reinitialization of encoder model
@@ -48,7 +63,7 @@ if __name__ == '__main__':
     chunks.extend(chks)
 
   scores = torch.cat(scores)
-  chunk_ids = scores.argsort().tolist()[-config.K:]
+  chunk_ids = scores.argsort().tolist()[-config.PASSAGE_K:]
 
   # create prompt
   # TODO (rohan): should I initialize the template in config?
