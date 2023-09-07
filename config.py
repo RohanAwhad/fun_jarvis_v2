@@ -14,4 +14,3 @@ MAX_LEN = 1200
 
 # encoder config
 ENCODER = mpnet_encoder
-MODEL_PATH = '/Users/rohan/3_Resources/ai_models/all-mpnet-base-v2'

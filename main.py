@@ -53,7 +53,7 @@ if __name__ == '__main__':
   exit(0)
   '''
 
-  config.ENCODER.init(config.MODEL_PATH)
+  config.ENCODER.init()
   books = ['riscv_isa_privileged', 'xv6_book']  # TODO (rohan): this should be taken from yaml
   with open(config.QUESTION_FILE, 'r') as f: question = f.read()  # TODO (rohan): this should be run in loop, to avoid reinitialization of encoder model
   question_embd = config.ENCODER.encode(question)

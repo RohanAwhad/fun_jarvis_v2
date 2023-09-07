@@ -8,11 +8,12 @@ from transformers import AutoTokenizer, AutoModel
 
 from typing import Union
 
+model_path = '/Users/rohan/3_Resources/ai_models/all-mpnet-base-v2'
 tokenizer = None
 model = None
 batch_size = None
 
-def init(model_path):
+def init():
   global tokenizer, model, batch_size
 
   tokenizer = AutoTokenizer.from_pretrained(model_path)
