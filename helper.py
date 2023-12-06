@@ -1,6 +1,8 @@
 import bz2
 import pickle
 
+from loguru import logger
+
 
 def get_chunks(all_sents, max_len=1200):
   chunks = []
