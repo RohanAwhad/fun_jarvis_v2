@@ -1,5 +1,5 @@
 import torch
-from encoders import mpnet_encoder, msmarco_distilbert_cos
+from encoders import mpnet_encoder, msmarco_distilbert_cos, encoder_service
 
 torch.set_grad_enabled(False)
 
@@ -14,4 +14,5 @@ MAX_LEN = 500
 
 # encoder config
 # ENCODER = msmarco_distilbert_cos
-ENCODER = mpnet_encoder
+# ENCODER = mpnet_encoder
+ENCODER = encoder_service
