@@ -3,28 +3,17 @@
 import aiohttp
 import config
 import helper
-import web_search
-
-from readable import Readable
 
 # 3rd -party libs
-import bz2
 import os
 import pandas as pd
-import pickle
 import pyperclip
-import time
 import torch
 
 from loguru import logger
 from nltk.tokenize import sent_tokenize
 from pypdf import PdfReader
-from tqdm import tqdm
-from transformers import AutoTokenizer, AutoModel
-from typing import Union
 from sklearn.metrics.pairwise import cosine_similarity
-import requests
-import asyncio
 
 pd.set_option("display.max_columns", None)
 
