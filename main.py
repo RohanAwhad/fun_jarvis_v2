@@ -101,17 +101,17 @@ if __name__ == "__main__":
 
     config.ENCODER.init()
 
-    books = [
-        # "data_science_for_business",
-        "the_starbucks_experience_book",
-    ]
-
     # books = [
-    #     "data_mgmt_for_multimedia_retrieval",
-    #     "intro_to_info_retrieval",
-    #     "search_engines_info_retrieval_in_practice",
-    #     "mwdb_all_lectures_transcription.txt",
+    #     # "data_science_for_business",
+    #     "the_starbucks_experience_book",
     # ]
+
+    books = [
+        "data_mgmt_for_multimedia_retrieval",
+        "intro_to_info_retrieval",
+        "search_engines_info_retrieval_in_practice",
+        "mwdb_all_lectures_transcription.txt",
+    ]
 
     # books = [
     #     "riscv_isa_privileged",
@@ -174,3 +174,6 @@ if __name__ == "__main__":
     with open(config.PROMPT_FILE, "w") as f:
         f.write(prompt)
     pyperclip.copy(prompt)
+
+    from dsp import call_llm
+    print(call_llm(prompt))
