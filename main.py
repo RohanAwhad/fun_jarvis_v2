@@ -1,5 +1,6 @@
 #!/opt/homebrew/bin/python3
 
+import asyncio
 import aiohttp
 import config
 import helper
@@ -42,9 +43,12 @@ def get_context(question_embd, book_name):
 
         all_sents = sent_tokenize(all_text)
         all_chunks = helper.get_chunks(all_sents, max_len=config.MAX_LEN)
-        embeddings = asyncio.run(
-            encode_chunks(all_chunks)
-        )  # Encode chunks synchronously
+        if config.ENCODER.__name__ == "encoder_service":
+            embeddings = asyncio.run(
+                encode_chunks(all_chunks, book_name)
+            )
+        else:
+            embeddings = config.ENCODER.encode(all_chunks)
         helper.save_data((all_chunks, embeddings), embd_fn)
 
     similarity_score = torch.tensor(
@@ -98,7 +102,8 @@ if __name__ == "__main__":
     config.ENCODER.init()
 
     books = [
-        "data_science_for_business",
+        # "data_science_for_business",
+        "the_starbucks_experience_book",
     ]
 
     # books = [
@@ -120,7 +125,10 @@ if __name__ == "__main__":
         question = (
             f.read()
         )  # TODO (rohan): this should be run in loop, to avoid reinitialization of encoder model
-    question_embd = asyncio.run(config.ENCODER.encode(question))
+    if config.ENCODER.encode.__name__ == "encoder_service":
+        question_embd = asyncio.run(config.ENCODER.encode(question))
+    else:
+        question_embd = config.ENCODER.encode(question)
     scores, chunks, book_names = [], [], []
     for book_name in books:
         sc, chks = get_context(question_embd, book_name)
