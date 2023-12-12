@@ -1,11 +1,12 @@
 #!/opt/homebrew/bin/python3
 
-import asyncio
-import aiohttp
 import config
+import dsp
 import helper
 
 # 3rd -party libs
+import asyncio
+import aiohttp
 import os
 import pandas as pd
 import pyperclip
@@ -72,20 +73,58 @@ async def rerank_chunks(question, chunks):
     return reranked_scores
 
 
+def rag(question, books):
+  # embed
+  if config.ENCODER.encode.__name__ == "encoder_service": question_embd = asyncio.run(config.ENCODER.encode(question))
+  else: question_embd = config.ENCODER.encode(question)
+  logger.info('question embedding done')
+
+  # retrieve
+  scores, chunks, book_names = [], [], []
+  for book_name in books:
+      sc, chks = get_context(question_embd, book_name)
+      scores.append(sc)
+      chunks.extend(chks)
+      book_names.extend([book_name] * len(chks))
+
+  scores = torch.cat(scores)
+  chunk_ids = scores.argsort().tolist()[-config.SEARCH_K :][::-1]
+  logger.info('retrieval done')
+
+  # rerank
+  rerank_scores = asyncio.run(rerank_chunks(question, chunks))
+  rerank_scores = torch.tensor(rerank_scores)
+  chunk_ids = rerank_scores.argsort().tolist()[-config.SEARCH_K :][::-1]
+  logger.info('reranking done')
+
+  # create prompt
+  # TODO (rohan): should I initialize the template in config?
+  with open(config.PROMPT_TEMPLATE, "r") as f: prompt_template = f.read()
+  passages = "\n-\n".join((f"[{i+1}] {chunks[x]}" for i, x in enumerate(chunk_ids)))
+  prompt = prompt_template.format(passages=passages, question=question)
+
+  # generate
+  llm_output = dsp.call_llm(prompt)
+  logger.debug(llm_output)
+  ans_obj = dsp.get_json(llm_output)
+
+  return ans_obj["final_answer"]
+
+
 if __name__ == "__main__":
   config.ENCODER.init()
 
-  # books = [
-  #     # "data_science_for_business",
-  #     "the_starbucks_experience_book",
-  # ]
-
   books = [
-      "data_mgmt_for_multimedia_retrieval",
-      "intro_to_info_retrieval",
-      "search_engines_info_retrieval_in_practice",
-      "mwdb_all_lectures_transcription.txt",
+      # "data_science_for_business",
+      "the_starbucks_experience_book",
   ]
+
+  # books = [
+  #     "data_mgmt_for_multimedia_retrieval",
+  #     "intro_to_info_retrieval",
+  #     "search_engines_info_retrieval_in_practice",
+  #     "mwdb_all_lectures_transcription.txt",
+  # ]
 
   # books = [
   #     "riscv_isa_privileged",
@@ -99,55 +138,6 @@ if __name__ == "__main__":
       question = (
           f.read()
       )  # TODO (rohan): this should be run in loop, to avoid reinitialization of encoder model
-  if config.ENCODER.encode.__name__ == "encoder_service":
-      question_embd = asyncio.run(config.ENCODER.encode(question))
-  else:
-      question_embd = config.ENCODER.encode(question)
-  scores, chunks, book_names = [], [], []
-  for book_name in books:
-      sc, chks = get_context(question_embd, book_name)
-      scores.append(sc)
-      chunks.extend(chks)
-      book_names.extend([book_name] * len(chks))
 
-  scores = torch.cat(scores)
-  chunk_ids = scores.argsort().tolist()[-config.SEARCH_K :][::-1]
-  print(
-      pd.DataFrame(
-          {
-              "chunk": [chunks[x] for x in chunk_ids],
-              "score": scores[chunk_ids],
-              "book": [book_names[x] for x in chunk_ids],
-          }
-      )
-  )
-
-  # rerank
-  rerank_scores = asyncio.run(rerank_chunks(question, chunks))
-  rerank_scores = torch.tensor(rerank_scores)
-  chunk_ids = rerank_scores.argsort().tolist()[-config.SEARCH_K :][::-1]
-
-  print("After Reranking")
-  print(
-      pd.DataFrame(
-          {
-              "chunk": [chunks[x] for x in chunk_ids],
-              "reranked_score": rerank_scores[chunk_ids],
-              "book": [book_names[x] for x in chunk_ids],
-              "cosine_score": scores[chunk_ids],
-          }
-      )
-  )
-
-  # create prompt
-  # TODO (rohan): should I initialize the template in config?
-  with open(config.PROMPT_TEMPLATE, "r") as f:
-      prompt_template = f.read()
-  passages = "\n-\n".join((f"[{i+1}] {chunks[x]}" for i, x in enumerate(chunk_ids)))
-  prompt = prompt_template.format(passages=passages, question=question)
-  with open(config.PROMPT_FILE, "w") as f:
-      f.write(prompt)
-  pyperclip.copy(prompt)
-
-  from dsp import call_llm
-  print(call_llm(prompt))
+  ans = rag(question, books)
+  print(ans)
