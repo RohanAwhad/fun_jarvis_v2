@@ -3,8 +3,8 @@ from encoders import mpnet_encoder, msmarco_distilbert_cos, encoder_service
 
 torch.set_grad_enabled(False)
 
-SEARCH_K = 15
-PASSAGE_K = 75
+SEARCH_K = 5
+PASSAGE_K = 15
 BOOK_DIR = "books"
 EMBD_DIR = "embeddings"
 QUESTION_FILE = "question.txt"
