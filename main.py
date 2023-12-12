@@ -51,7 +51,7 @@ def get_context(question_embd, book_name):
 
 async def rerank_chunks(question, chunks):
   async with aiohttp.ClientSession() as session:
-    batch_size = 2
+    batch_size = 16
     reranked_scores = []
     tasks = []
     for i in range(0, len(chunks), batch_size):
