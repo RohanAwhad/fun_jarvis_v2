@@ -14,5 +14,5 @@ MAX_LEN = 500
 
 # encoder config
 # ENCODER = msmarco_distilbert_cos
-# ENCODER = mpnet_encoder
-ENCODER = encoder_service
+ENCODER = mpnet_encoder
+# ENCODER = encoder_service
