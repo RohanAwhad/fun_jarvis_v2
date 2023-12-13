@@ -5,13 +5,44 @@ import json
 
 import prompts
 
-def call_llm(prompt: str) -> str:
-  response = g4f.ChatCompletion.create(
-    model=g4f.models.gpt_4,
-    messages=[{"role": "user", "content": prompt}],
-    stream=False,
-  )
-  return response
+g4f.debug.logging = True  # Enable debug logging
+g4f.debug.check_version = False
+
+# def call_llm(prompt: str) -> str:
+#   response = g4f.ChatCompletion.create(
+#     model = g4f.models.gpt_4,
+#     provider=g4f.Provider.Bing,
+#     messages=[{"role": "user", "content": prompt}],
+#     stream=False,
+#   )
+#   return response
+
+from openai import OpenAI
+client = OpenAI()
+
+def call_llm(prompt: str, is_json_output: bool=True) -> str:
+  if is_json_output:
+    response = client.chat.completions.create(
+      model="gpt-3.5-turbo-1106",
+      response_format={'type': 'json_object'},
+      messages=[{"role": "user", "content": prompt}],
+      temperature=0.3,
+      max_tokens=2000,
+      top_p=1,
+      frequency_penalty=0,
+      presence_penalty=0
+    )
+  else:
+    response = client.chat.completions.create(
+      model="gpt-3.5-turbo-16k",
+      messages=[{"role": "user", "content": prompt}],
+      temperature=0.3,
+      max_tokens=4000,
+      top_p=1,
+      frequency_penalty=0,
+      presence_penalty=0
+    )
+  return response.choices[0].message.content
 
 def get_json(text: str) -> Dict:
   json_string_extracted = re.search(r"\{.*\}", text, re.DOTALL).group()
